@@ -1,28 +1,49 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <!-- <div id="app">
+    <div id="nav">
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link>
+    </div>
+    <router-view/>
+  </div> -->
+  <el-container id="app">
+      <el-header>
+        <navbar/>
+        </el-header>
+        <unix-timestamp />
+  </el-container>
 </template>
-
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+// @ is an alias to /src
+import Navbar from '@/components/navbar.vue'
+import UnixTimestamp from '@/components/unix-timestamp.vue'
 export default {
-  name: 'App',
+  name: 'app',
   components: {
-    HelloWorld
+    Navbar,
+    UnixTimestamp
   }
 }
 </script>
+<style lang="scss">
+// #app {
+//   font-family: Avenir, Helvetica, Arial, sans-serif;
+//   -webkit-font-smoothing: antialiased;
+//   -moz-osx-font-smoothing: grayscale;
+//   text-align: center;
+//   color: #2c3e50;
+// }
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+// #nav {
+//   padding: 30px;
+
+//   a {
+//     font-weight: bold;
+//     color: #2c3e50;
+
+//     &.router-link-exact-active {
+//       color: #42b983;
+//     }
+//   }
+// }
 </style>
