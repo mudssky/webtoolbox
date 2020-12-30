@@ -28,18 +28,18 @@
 </template>
 <script>
 export default {
-  name: "WtbNavbar",
-  data() {
+  name: 'WtbNavbar',
+  data () {
     return {
-      activeIndex: "1",
-    };
+      activeIndex: '1'
+    }
   },
   methods: {
-    handleSelect(key, keyPath) {
-      console.log(key, keyPath);
-    },
-  },
-};
+    handleSelect (key, keyPath) {
+      console.log(key, keyPath)
+    }
+  }
+}
 </script>
 <style lang="scss" scoped>
 </style>
