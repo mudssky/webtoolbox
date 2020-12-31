@@ -10,7 +10,9 @@
       <el-header>
         <navbar/>
         </el-header>
-        <unix-timestamp />
+        <el-main>
+          <unix-timestamp />
+        </el-main>
   </el-container>
 </template>
 <script>
