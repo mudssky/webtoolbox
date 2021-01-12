@@ -5,13 +5,13 @@
         <span>{{currentTimeStr}}</span>
     </el-row>
       <el-row :gutter="20" class="curTimestampRow" >
-        <el-col :span=4>
+        <el-col :span="4">
             <span class="timestampLabel">当前的时间戳：</span>
         </el-col>
-        <el-col :span=4>
+        <el-col :span="4">
             <span>{{currentTimestamp}}</span>
         </el-col>
-        <el-col :span=2 class="curTimeOption">
+        <el-col :span="2" class="curTimeOption">
           <el-select v-model="curTimeOption" >
             <el-option
               v-for="item in timeOptions"
@@ -21,30 +21,51 @@
             </el-option>
           </el-select>
         </el-col>
-        <el-col :span=3 class="copyedTimeStamp">
+        <el-col :span="3" class="copyedTimeStamp">
            <el-button type="primary" v-on:click="copyTimeStamp">截取时间戳</el-button>
         </el-col>
     </el-row>
     <el-row :gutter="20" class="copyedTimeStampRow">
-      <el-col :span=4>
-        <span>截取的时间戳：</span>
+      <el-col :span="6">
+        <span>截取的时间戳和对应的时间</span>
       </el-col>
-        <el-col :span=7>
+        <el-col :span="7">
             <el-input
             v-bind:maxlength="timeStampLength"
             v-bind:minlength="timeStampLength"
+            type="number"
             placeholder="拷贝的内容"
             v-model="copyedTimeStamp"
+            v-on:change="validateAndConvert"
             clearable></el-input>
         </el-col>
-        <el-col :span=6>
+        <el-col :span="6">
           <el-date-picker
-            v-model="copyedTimeStamp"
+            v-model="pickedTimeStamp"
             type="datetime"
             value-format="timestamp"
-            placeholder="选择日期时间">
+            placeholder="选择日期时间"
+            v-on:change="updateTimeStamp"
+            >
           </el-date-picker>
         </el-col>
+    </el-row>
+    <el-row class="howToRow">
+      <div>如何在不同编程语言中获取现在的Unix时间戳(Unix timestamp)？</div>
+      <el-table
+      :data="tableData"
+      style="width: 100%">
+      <el-table-column
+        prop="name"
+        label="语言"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="desp"
+        label="说明"
+        width="560">
+      </el-table-column>
+    </el-table>
     </el-row>
   </div>
 </template>
@@ -71,7 +92,16 @@ export default {
       ],
       curTimeOption: 'option1',
       // currentTimeStr: new Date(currentTimestampMs).toString()
-      copyedTimeStamp: 1610357992
+      copyedTimeStamp: 1610357992,
+      // copyedTimeStampMs: 0,
+      // 这边的精度是毫秒，所以用这个属性作为基准值
+      pickedTimeStamp: 1610357992000,
+      tableData: [{
+        name: 'JavaScript',
+        desp: '上海市普陀区金沙江路 1518 弄'
+      }
+      ]
+      // convertedTimeStr: ''
     }
   },
   methods: {
@@ -82,26 +112,43 @@ export default {
     },
     copyTimeStamp () {
       this.copyedTimeStamp = this.currentTimestamp
+      this.validateAndConvert()
+    },
+    validateAndConvert () {
+      // js进行数字的赋值的时候，copyedTimeStamp会变成number类型
+      if (typeof this.copyedTimeStamp === 'number') {
+        if (this.curTimeOption === 'option1') {
+          this.pickedTimeStamp = this.copyedTimeStamp * 1000
+        } else if (this.curTimeOption === 'option2') {
+          this.pickedTimeStamp = this.copyedTimeStamp
+        }
+        // 如果此时数据不是number类型，因为输入框输入的默认是text，是string类型
+        // 把input标签的type改为number只是浏览器端多了一步验证，让你无法输入或者拷贝数字以外的字符串，
+        // 但是双向绑定传递过来的仍然是字符串
+      } else if (typeof this.copyedTimeStamp === 'string') {
+        const timeStampRe = new RegExp(/^[1-9]\d*$/)
+        if (timeStampRe.test(this.copyedTimeStamp)) {
+          const copyedTimeStampNum = parseInt(this.copyedTimeStamp)
+          // console.log(this.copyedTimeStamp)
+          if (this.curTimeOption === 'option1') {
+            this.pickedTimeStamp = copyedTimeStampNum * 1000
+          } else if (this.curTimeOption === 'option2') {
+            this.pickedTimeStamp = copyedTimeStampNum
+          }
+        } else {
+          this.$message(
+            {
+              showClose: true,
+              message: '请输入格式正确的时间戳',
+              type: 'warning'
+            })
+          this.copyedTimeStamp = ''
+        }
+      }
+    },
+    updateTimeStamp () {
+      this.copyedTimeStamp = (this.curTimeOption === 'option1' ? this.pickedTimeStamp / 1000 : this.pickedTimeStamp)
     }
-    // fixInputTimeStamp () {
-    //   if (this.copyedTimeStamp === '') {
-    //     return
-    //   }
-    //   const timeStampRe = new RegExp(/^[1-9]\d*$/)
-    //   if (timeStampRe.test(this.copyedTimeStamp)) {
-    //     if (this.copyedTimeStamp.length > this.timeStampLength) {
-    //       this.copyedTimeStamp = this.copyedTimeStamp.substring(0, this.timestampLength)
-    //     }
-    //   } else {
-    //     this.$message(
-    //       {
-    //         showClose: true,
-    //         message: '请输入格式正确的时间戳',
-    //         type: 'warning'
-    //       })
-    //     this.copyedTimeStamp = ''
-    //   }
-    // }
   },
   computed: {
     currentTimestampSecond: function () {
@@ -115,6 +162,10 @@ export default {
     timeStampLength: function () {
       // 判断当前的单位选项是毫秒还是秒，返回当前时间戳的长度
       return this.curTimeOption === 'option1' ? 10 : 13
+    },
+    convertedTimeStr: function () {
+      // const newDate = new Date(this.copyedTimeStamp)
+      return new Date(this.copyedTimeStamp).toLocaleString()
     }
   },
   watch: {
@@ -125,26 +176,18 @@ export default {
         this.currentTimestamp = this.currentTimestampMs
       }
     },
-    copyedTimeStamp: function (newVal) {
-      if (newVal === '') {
-        return
-      }
-      // const copyedTimeStampStr = String(this.copyedTimeStamp)
-      const timeStampStr = String(newVal)
-      const timeStampRe = new RegExp(/^[1-9]\d*$/)
-      if (timeStampRe.test(timeStampStr)) {
-        if (timeStampStr.length > this.timeStampLength) {
-          this.copyedTimeStamp = parseInt(timeStampStr.substring(0, this.timestampLength))
-          this.$message(this.copyedTimeStamp + '')
-        }
+    curTimeOption: function (newVal) {
+      if (newVal === 'option1') {
+        this.copyedTimeStamp = Math.round(this.copyedTimeStamp / 1000)
       } else {
-        this.$message(
-          {
-            showClose: true,
-            message: '请输入格式正确的时间戳',
-            type: 'warning'
-          })
-        this.copyedTimeStamp = ''
+        this.copyedTimeStamp = this.copyedTimeStamp * 1000
+      }
+    },
+    pickedTimeStamp: function (newVal) {
+      if (this.curTimeOption === 'option1') {
+        this.copyedTimeStamp = newVal / 1000
+      } else {
+        this.copyedTimeStamp = newVal
       }
     }
   },
@@ -168,11 +211,6 @@ $rowHeight:40px;
     vertical-align: top;
     // line-height:20px;
   }
-  // el-col {·
-  //   display: flex;
-  //   justify-content: center;
-  //   align-items: center;
-  // }
   .currentTimeRow{
     height: $rowHeight;
   }
@@ -185,9 +223,11 @@ $rowHeight:40px;
   .curTimeOption{
     width: 120px;
   }
+  .howToRow{
+    height: $rowHeight;
+    color: blue;
+    margin-top: 20px;
+    // overflow: visible;
+  }
 }
-
-// .timestampLabel{
-//   font-size: $basefontSize;
-// }
 </style>
