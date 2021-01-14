@@ -1,5 +1,5 @@
 <template>
-  <div id="unix-timestamp">
+  <el-container id="unix-timestamp">
     <el-row class="currentTimeRow">
       <span>当前的时间：</span>
         <span>{{currentTimeStr}}</span>
@@ -67,7 +67,7 @@
       </el-table-column>
     </el-table>
     </el-row>
-  </div>
+  </el-container>
 </template>
 <script>
 export default {
@@ -96,11 +96,19 @@ export default {
       // copyedTimeStampMs: 0,
       // 这边的精度是毫秒，所以用这个属性作为基准值
       pickedTimeStamp: 1610357992000,
+
+      // 忽略tableData的eslint检查，因为描述里面要用到反引号，使用js的模板字符串语法，所以会触发eslint的引号检查
+      /* eslint-disable */
       tableData: [{
         name: 'JavaScript',
-        desp: '上海市普陀区金沙江路 1518 弄'
+        desp: 'new Date().getTime() ; new Date().toLocaleString()'
+      },
+      {
+        name: 'golang',
+        desp: 'time.Now().Unix()'
       }
       ]
+      /* eslint-disable */
       // convertedTimeStr: ''
     }
   },

@@ -11,19 +11,22 @@
         <navbar/>
         </el-header>
         <el-main>
-          <unix-timestamp />
+          <gacha/>
+          <!-- <unix-timestamp /> -->
         </el-main>
   </el-container>
 </template>
 <script>
 // @ is an alias to /src
 import Navbar from '@/components/navbar.vue'
-import UnixTimestamp from '@/components/unix-timestamp.vue'
+// import UnixTimestamp from '@/components/unix-timestamp.vue'
+import Gacha from '@/components/gacha.vue'
 export default {
   name: 'app',
   components: {
     Navbar,
-    UnixTimestamp
+    // UnixTimestamp,
+    Gacha
   }
 }
 </script>
