@@ -1,7 +1,8 @@
 <template>
   <el-container id="gacha">
-      {{validateRarityList()}}
-      <el-button type="primary" v-on:click="gachaRarity">抽取稀有度</el-button>
+      {{testRarityCount}}
+      <el-button type="primary" v-on:click="testGachaRarity(10000,0)">抽取稀有度</el-button>
+      <el-button type="primary" v-on:click="testAddCard">添加卡片</el-button>
   </el-container>
 </template>
 
@@ -17,6 +18,12 @@ export default {
   name: 'gacha',
   data () {
     return {
+      testRarityCount: {
+        SSR: 0,
+        SR: 0,
+        N: 0,
+        R: 0
+      },
       // 稀有度列表，所有稀有度的概率加起来必须为1.
       rarityList: [
         // {
@@ -80,7 +87,18 @@ export default {
         throw Error('稀有度列表有错误，所有稀有度的概率加起来必须为1')
       }
       // 生成[0,1)范围的随机数
-      // const randomNum = this.randomFunc()
+      // 划分0-1的区间，随机数生成在0-1的概率是均匀的，所以划分区间的范围和概率是正比的。
+      // 判断生成的随机数出现哪个区间，就说明抽到那哪个稀有度的卡。
+      // 这边采用 1的初始范围下探， 0.93-1 就是ssr ，依次类推。
+      let range = 1
+      const randomNum = this.randomFunc()
+      for (let i = 0; i < this.rarityList.length; i++) {
+        range -= this.rarityList[i].probability
+        if (randomNum >= range) {
+          // console.log(this.rarityList[i].name)
+          return this.rarityList[i]
+        }
+      }
     },
     gachaFromRarity (rarity) {
 
@@ -92,6 +110,38 @@ export default {
     },
     gachaTenth () {
       return []
+    },
+    testGachaRarity (times, delay) {
+      if (delay <= 0) {
+        for (let i = 0; i < times; i++) {
+          const rarityObj = this.gachaRarity()
+          this.testRarityCount[rarityObj.name] += 1
+        }
+        return
+      }
+      let count = 0
+      const gachaInterval = setInterval(() => {
+        const rarityObj = this.gachaRarity()
+        this.testRarityCount[rarityObj.name] += 1
+        // console.log(this.testRarityCount[rarityObj.name])
+        count += 1
+        if (count >= times) {
+          clearInterval(gachaInterval)
+        }
+      }, delay)
+    },
+    testAddCard () {
+      let increasedID = 0
+      for (let i = 0; i < this.rarityList.length; i++) {
+        for (let j = 0; j < this.rarityList[i].probability * 100; j++) {
+          increasedID += 1
+          this.cardList.push({
+            id: increasedID,
+            name: increasedID + '',
+            color: this.rarityList[i].color
+          })
+        }
+      }
     }
   },
   computed: {
@@ -102,6 +152,19 @@ export default {
         total += curItem.probability
       })
       return total
+    },
+    // 按照稀有度分类卡牌，每个稀有度的卡牌对象都放到一个列表里
+    rarityCardList () {
+      const res = {}
+      this.cardList.forEach((item) => {
+        if (item.rarity in res) {
+          res[item.rarity].push(item)
+        } else {
+          res[item.rarity] = []
+          res[item.rarity].push(item)
+        }
+      })
+      return res
     }
   }
 }
