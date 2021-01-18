@@ -1,18 +1,63 @@
 <template>
-  <el-container id="gacha">
-      {{testRarityCount}}
-      <el-button type="primary" v-on:click="testGachaRarity(10000,0)">抽取稀有度</el-button>
-      <el-button type="primary" v-on:click="testAddCard">添加卡片</el-button>
-  </el-container>
+  <div id="gacha">
+    <el-row>
+      <el-col :span="24">
+        <div>
+        {{testRarityCount}}
+        <el-button type="primary" v-on:click="testGachaRarity(10000,0)">抽取稀有度</el-button>
+        <el-button type="primary" v-on:click="testAddCard">添加卡片</el-button>
+        <el-button type="primary" v-on:click="gachaTenth">抽取10连</el-button>
+        <el-button type="primary" v-on:click="gachaOnce">抽取1次</el-button>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="12">
+        <div>
+        <el-table
+        :data="resultList"
+        style="width: 100%"
+        :default-sort = "{prop:'index',order: 'descending'}"
+        :row-class-name="tableRowClassName"
+        >
+        <el-table-column
+          label="index"
+          type="index"
+          sortable
+          width="180">
+        </el-table-column>
+        <el-table-column
+          prop="name"
+          label="名字"
+          sortable
+          width="180">
+        </el-table-column>
+        <el-table-column
+          prop="rarity"
+          label="稀有度">
+        </el-table-column>
+        <el-table-column
+          prop="rarityP"
+          label="稀有度概率">
+        </el-table-column>
+        </el-table>
+      </div>
+      </el-col>
+    </el-row>
+  </div>
 </template>
 
 <script>
 /*
 卡池设计是这样的：
 
-抽卡逻辑的流程是这样的：
+抽卡逻辑的流程有以下两种处理方式：
+方法一：先抽取稀有度，再抽取指定稀有度的卡池
 1.首先有很多种稀有度，加起来的概率是100%，先确定卡片的稀有度。
 2.抽取指定稀有度的卡池，如果卡池有概率提升，那么对应提升的卡片的概率增加，其余没有pickup的卡片均分剩下的概率（所以说pickup的概率加起来必须小于该稀有度总的概率）
+方法二： 直接抽取指定的卡池
+卡池中所有卡的概率加起来是100%，然后按照每张卡的概率划分范围，生成随机浮点数，生成的浮点数落在哪张卡的范围，就是抽到哪张卡。
+第二种方法就少了一次随机数计算，也比较简单，但是问题在于每次加入新卡以后，概率需要重新计算。
 */
 export default {
   name: 'gacha',
@@ -61,7 +106,9 @@ export default {
       // 存放所有卡片对象
       cardList: [],
       // 存放抽卡结果的列表，按抽取顺序进行存放，后抽取的push到列表的尾部
-      resultList: []
+      resultList: [],
+      // 获得概率提升的卡的概率，用于构建up池
+      pickupP: 0.02
     }
   },
   methods: {
@@ -101,15 +148,49 @@ export default {
       }
     },
     gachaFromRarity (rarity) {
-
+      // console.log(this.rarityCardList[rarity])
+      const gachaPool = this.rarityCardList[rarity]
+      // console.log(gachaPool)
+      const item = this.gachaFromPool(gachaPool)
+      console.log(item)
     },
-    gachaOnce () {
-      return {
-
+    // 从卡池抽卡，卡池是一个列表包含所有卡片对象，并且所有卡片对象必须有一个出现概率属性。
+    gachaFromPool (gachaPool) {
+      let range = 1
+      const randomNum = this.randomFunc()
+      // console.log(gachaPool.length)
+      // console.log(randomNum)
+      for (let i = 0; i < gachaPool.length; i++) {
+        // console.log(gachaPool[i].probability)
+        range -= gachaPool[i].probability
+        if (randomNum >= range) {
+          // console.log(this.rarityList[i].name)
+          // console.log(gachaPool[i])
+          return gachaPool[i]
+        }
       }
     },
+    // 检查卡池所有项目的出现概率之和是否等于1,gachaPool每个对象必须有一个概率属性
+    checkPool (gachaPool) {
+      let probabilitySum = 0
+      gachaPool.forEach((item) => {
+        probabilitySum += item.probability
+      })
+      if (probabilitySum === 1) {
+        return true
+      }
+      return false
+    },
+    gachaOnce () {
+      const item = this.gachaFromPool(this.cardList)
+      // console.log(item)
+      this.resultList.push(item)
+      // return
+    },
     gachaTenth () {
-      return []
+      for (let i = 0; i < 10; i++) {
+        this.gachaOnce()
+      }
     },
     testGachaRarity (times, delay) {
       if (delay <= 0) {
@@ -132,16 +213,40 @@ export default {
     },
     testAddCard () {
       let increasedID = 0
+      // console.log('rarityList length:', this.rarityList.length)
       for (let i = 0; i < this.rarityList.length; i++) {
-        for (let j = 0; j < this.rarityList[i].probability * 100; j++) {
+        const range = Math.round(this.rarityList[i].probability * 100)
+        for (let j = 0; j < range; j++) {
           increasedID += 1
           this.cardList.push({
             id: increasedID,
             name: increasedID + '',
-            color: this.rarityList[i].color
+            color: this.rarityList[i].color,
+            rarity: this.rarityList[i].name,
+            rarityP: this.rarityList[i].probability
           })
         }
       }
+      this.calculateP()
+    },
+    // 添加完卡片后，按稀有度存放卡片的列表也完成了，需要根据这个稳定的数据来计算每张卡的概率
+    calculateP () {
+      this.cardList.forEach((card) => {
+        const cardRarityCount = this.rarityCardList[card.rarity].length
+        const totalP = card.rarityP
+        card.probability = totalP / cardRarityCount
+      })
+    },
+    // 根据卡片的稀有度，显示不同的颜色
+    tableRowClassName (row, rowIndex) {
+      const rarityClass = {
+        R: 'row-blue',
+        SR: 'row-purple',
+        SSR: 'row-gold',
+        N: 'row-white'
+      }
+      console.log(row.row.rarity)
+      return rarityClass[row.row.rarity]
     }
   },
   computed: {
@@ -169,5 +274,25 @@ export default {
   }
 }
 </script>
-<style>
+<style lang="scss" >
+.row-blue{
+  background: lightblue !important;
+  // color:yellow;
+}
+.row-purple{
+  background:rgb(191, 130, 240) !important;
+}
+.row-white{
+  background:white !important;
+}
+.row-gold{
+  background:gold !important;
+}
+#gacha{
+    width:1200px;
+    margin: 0 auto;
+    .el-row{
+      width:100%;
+    }
+}
 </style>

@@ -31,11 +31,11 @@ export default {
 }
 </script>
 <style lang="scss">
-#app {
-  .el-main{
-    height:800px;
-  }
-}
+// #app {
+//   .el-main{
+//     // height:1200px;
+//   }
+// }
 
 // #nav {
 //   padding: 30px;
