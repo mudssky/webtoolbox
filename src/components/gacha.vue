@@ -17,12 +17,12 @@
         <el-table
         :data="resultList"
         style="width: 100%"
-        :default-sort = "{prop:'index',order: 'descending'}"
+        :default-sort = "{prop: 'index', order: 'descending'}"
         :row-class-name="tableRowClassName"
         >
         <el-table-column
-          label="index"
-          type="index"
+          label="序号"
+          prop="index"
           sortable
           width="180">
         </el-table-column>
@@ -38,6 +38,7 @@
         </el-table-column>
         <el-table-column
           prop="rarityP"
+          sortable
           label="稀有度概率">
         </el-table-column>
         </el-table>
@@ -184,6 +185,8 @@ export default {
     gachaOnce () {
       const item = this.gachaFromPool(this.cardList)
       // console.log(item)
+      const generateTime = new Date().getTime()
+      item.generateTime = generateTime
       this.resultList.push(item)
       // return
     },
@@ -245,8 +248,23 @@ export default {
         SSR: 'row-gold',
         N: 'row-white'
       }
-      console.log(row.row.rarity)
+      // console.log(row.row.rarity)
+      // console.log(row)
       return rarityClass[row.row.rarity]
+    }
+  },
+  watch: {
+    // 监听数组长度,
+    // 由于elementui 的table没有提供记录每条记录在原数组的下标的方法，所以，我采用手动添加index的属性的方式
+    // 监听数组的长度，只有数组长度增加的时候进行执行添加index属性的操作（因为抽卡只有添加和删除两种操作，删除操作不会改变已经有的index，只要不执行替换操作就不会出现BUG）
+    'resultList.length' (newVal, oldVal) {
+      if (newVal > oldVal) {
+        for (let i = oldVal; i < newVal; i++) {
+          this.resultList[i].index = i
+        }
+      }
+      // console.log('new', newVal)
+      // console.log('old', oldVal)
     }
   },
   computed: {
