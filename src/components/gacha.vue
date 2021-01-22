@@ -1,6 +1,41 @@
 <template>
   <div id="gacha">
     <el-row>
+      <div class="gachaPool-label">
+        目前卡池中的卡牌总数是{{cardList.length}}
+      </div>
+    </el-row>
+    <el-row :gutter="5" class="gachaPool">
+      <el-col :span="2" v-bind:key="card.id" v-for="card in cardList">
+        <el-tooltip  placement="top">
+          <div slot="content">{{card}}</div>
+          <el-tag :color="card.color" class="gachaPool-tag">{{card.name}}</el-tag>
+         </el-tooltip>
+      </el-col>
+    </el-row>
+    <el-row>
+      <div>抽卡统计</div>
+      <!-- <table class="gahcaReport">
+       <tr>
+         <td>SSR</td>
+         <td>SR</td>
+         <td>N</td>
+         <td>R</td>
+         <td>抽取次数</td>
+       </tr>
+       <tr>
+         <td>{{rarityCount['SSR']}}</td>
+         <td>{{rarityCount['SR']}}</td>
+         <td>{{rarityCount['N']}}</td>
+         <td>{{rarityCount['R']}}</td>
+         <td>{{resultList.length}}</td>
+       </tr>
+      </table> -->
+      <!-- <el-col :key="rarity.id" v-for="rarity in rarityList">
+        <div>抽到稀有度为{{rarity.name}}的卡片数量为{{rarityCount[rarity.name]}}</div>
+      </el-col> -->
+    </el-row>
+    <el-row>
       <el-col :span="24">
         <div>
         {{testRarityCount}}
@@ -65,6 +100,12 @@ export default {
   data () {
     return {
       testRarityCount: {
+        SSR: 0,
+        SR: 0,
+        N: 0,
+        R: 0
+      },
+      rarityCount: {
         SSR: 0,
         SR: 0,
         N: 0,
@@ -185,8 +226,8 @@ export default {
     gachaOnce () {
       const item = this.gachaFromPool(this.cardList)
       // console.log(item)
-      const generateTime = new Date().getTime()
-      item.generateTime = generateTime
+      // const generateTime = new Date().getTime()
+      // item.generateTime = generateTime
       this.resultList.push(item)
       // return
     },
@@ -254,17 +295,21 @@ export default {
     }
   },
   watch: {
-    // 监听数组长度,
+    // 监听数组长度,统计各个稀有度的卡片数据
     // 由于elementui 的table没有提供记录每条记录在原数组的下标的方法，所以，我采用手动添加index的属性的方式
     // 监听数组的长度，只有数组长度增加的时候进行执行添加index属性的操作（因为抽卡只有添加和删除两种操作，删除操作不会改变已经有的index，只要不执行替换操作就不会出现BUG）
     'resultList.length' (newVal, oldVal) {
-      if (newVal > oldVal) {
+      const increaseNum = newVal - oldVal
+      if (increaseNum > 0) {
         for (let i = oldVal; i < newVal; i++) {
           this.resultList[i].index = i
+          // console.log(this.resultList[i].index)
+          // const card = this.resultList[i - 1]
+          // this.rarityCount[card.rarity]++
         }
       }
-      // console.log('new', newVal)
-      // console.log('old', oldVal)
+      console.log('new', newVal)
+      console.log('old', oldVal)
     }
   },
   computed: {
@@ -289,6 +334,21 @@ export default {
       })
       return res
     }
+    // rarityCount () {
+    //   const res = {
+    //     SSR: 0,
+    //     SR: 0,
+    //     N: 0,
+    //     R: 0
+    //   }
+    //   this.resultList.forEach((item) => {
+    //     res[item.rarity]++
+    //   })
+    //   return res
+    // }
+  },
+  beforeMount () {
+    this.testAddCard()
   }
 }
 </script>
@@ -311,6 +371,29 @@ export default {
     margin: 0 auto;
     .el-row{
       width:100%;
+    }
+    // .gachaReport{
+    //   border-collapse:collapse;
+    //   border:1px solid black !important;
+    // }
+    // .gachaReport td{
+    //   // border:1px solid black;
+    //   border:1px solid black !important;
+    // }
+    //  .gachaReport tr{
+    //   // border:1px solid black;
+    //   border:1px solid black !important;
+    // }
+    .gachaPool{
+      widows:100%;
+      min-height:150px;
+      background-color:lightcyan;
+    }
+    .gachaPool-tag{
+      color:white;
+    }
+    .gachaPool-label{
+      font-size:20px;
     }
 }
 </style>
