@@ -50,9 +50,8 @@
       <el-col :span="12">
         <div>
         <el-table
-        :data="resultList"
         style="width: 100%"
-        :default-sort = "{prop: 'index', order: 'descending'}"
+        :data="resultList"
         :row-class-name="tableRowClassName"
         >
         <el-table-column
@@ -228,6 +227,8 @@ export default {
       // console.log(item)
       // const generateTime = new Date().getTime()
       // item.generateTime = generateTime
+      item.index = this.resultList.length
+      console.log(item.index, item)
       this.resultList.push(item)
       // return
     },
@@ -298,19 +299,20 @@ export default {
     // 监听数组长度,统计各个稀有度的卡片数据
     // 由于elementui 的table没有提供记录每条记录在原数组的下标的方法，所以，我采用手动添加index的属性的方式
     // 监听数组的长度，只有数组长度增加的时候进行执行添加index属性的操作（因为抽卡只有添加和删除两种操作，删除操作不会改变已经有的index，只要不执行替换操作就不会出现BUG）
-    'resultList.length' (newVal, oldVal) {
-      const increaseNum = newVal - oldVal
-      if (increaseNum > 0) {
-        for (let i = oldVal; i < newVal; i++) {
-          this.resultList[i].index = i
-          // console.log(this.resultList[i].index)
-          // const card = this.resultList[i - 1]
-          // this.rarityCount[card.rarity]++
-        }
-      }
-      console.log('new', newVal)
-      console.log('old', oldVal)
-    }
+    // 'resultList.length' (newVal, oldVal) {
+    //   const increaseNum = newVal - oldVal
+    //   if (increaseNum > 0) {
+    //     for (let i = oldVal; i < newVal; i++) {
+    //       this.resultList[i].index = i
+    //       // console.log(this.resultList[i].index)
+    //       // const card = this.resultList[i - 1]
+    //       // this.rarityCount[card.rarity]++
+    //     }
+    //   }
+    //   console.log('new', newVal)
+    //   console.log('old', oldVal)
+    //   console.log(this.resultList)
+    // }
   },
   computed: {
     // 稀有度概率总和，当稀有度列表发生变化的时候，会重新计算新的稀有度概率总和
