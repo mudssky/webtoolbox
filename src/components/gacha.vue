@@ -53,6 +53,7 @@
         style="width: 100%"
         :data="resultList"
         :row-class-name="tableRowClassName"
+        :default-sort="{prop: 'index', order: 'descending'}"
         >
         <el-table-column
           label="序号"
@@ -153,6 +154,15 @@ export default {
     }
   },
   methods: {
+    shallowClone (sourceObj) {
+      const newObj = {}
+      for (const key in sourceObj) {
+        if (Object.hasOwnProperty.call(sourceObj, key)) {
+          newObj[key] = sourceObj[key]
+        }
+      }
+      return newObj
+    },
     // 检查稀有度列表是否有误，即所有稀有度的概率和必须为1.
     validateRarityList () {
       if (this.totalRarityProbability === 1) {
@@ -223,12 +233,13 @@ export default {
       return false
     },
     gachaOnce () {
-      const item = this.gachaFromPool(this.cardList)
+      let item = this.gachaFromPool(this.cardList)
       // console.log(item)
       // const generateTime = new Date().getTime()
       // item.generateTime = generateTime
+      item = this.shallowClone(item)
       item.index = this.resultList.length
-      console.log(item.index, item)
+      // console.log(item.index, item)
       this.resultList.push(item)
       // return
     },
