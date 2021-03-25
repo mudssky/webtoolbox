@@ -1,17 +1,17 @@
 <template>
-  <el-container id="unix-timestamp">
-    <el-row class="currentTimeRow">
-      <span>当前的时间：</span>
+  <div id="unix-timestamp">
+    <el-row  class="currentTimeRow">
+        <span>当前的时间：</span>
         <span>{{currentTimeStr}}</span>
     </el-row>
       <el-row :gutter="20" class="curTimestampRow" >
         <el-col :span="4">
             <span class="timestampLabel">当前的时间戳：</span>
         </el-col>
-        <el-col :span="4">
+        <el-col :span="8">
             <span>{{currentTimestamp}}</span>
         </el-col>
-        <el-col :span="2" class="curTimeOption">
+        <el-col :span="4" class="curTimeOption">
           <el-select v-model="curTimeOption" >
             <el-option
               v-for="item in timeOptions"
@@ -67,7 +67,7 @@
       </el-table-column>
     </el-table>
     </el-row>
-  </el-container>
+  </div>
 </template>
 <script>
 export default {
@@ -213,6 +213,7 @@ $rowHeight:40px;
 
 #unix-timestamp{
   width: 1200px;
+  height:800px;
   margin: 0 auto;
   font-size: $basefontSize;
   span{

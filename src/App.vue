@@ -11,7 +11,13 @@
         <navbar/>
         </el-header>
         <el-main>
-          <gacha/>
+          <div>
+          <router-link to="/gacha">抽卡模拟器</router-link>
+          <br>
+          <router-link to="/unix-timestamp">unix时间戳转换</router-link>
+          </div>
+          <router-view></router-view>
+          <!-- <gacha/> -->
           <!-- <unix-timestamp /> -->
         </el-main>
   </el-container>
@@ -20,13 +26,13 @@
 // @ is an alias to /src
 import Navbar from '@/components/navbar.vue'
 // import UnixTimestamp from '@/components/unix-timestamp.vue'
-import Gacha from '@/components/gacha.vue'
+// import Gacha from '@/components/gacha.vue'
 export default {
   name: 'app',
   components: {
-    Navbar,
+    Navbar
     // UnixTimestamp,
-    Gacha
+    // Gacha
   }
 }
 </script>

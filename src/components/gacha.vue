@@ -365,7 +365,7 @@ export default {
   }
 }
 </script>
-<style lang="scss" >
+<style lang="scss" scoped>
 .row-blue{
   background: lightblue !important;
   // color:yellow;
